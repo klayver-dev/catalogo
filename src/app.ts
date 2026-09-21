@@ -5,6 +5,7 @@ import Fastify from 'fastify';
 import { frontendUrl } from './config.js';
 import { createAuthModule } from './containers/auth-container.js';
 import { createCategoriesModule } from './containers/categories-container.js';
+import { createProductImagesModule } from './containers/product-images-container.js';
 import { createProductsModule } from './containers/products-container.js';
 import { createUsersModule } from './containers/users-container.js';
 import { registerErrorHandler } from './error-handler.js';
@@ -27,10 +28,12 @@ const authRoutes = createAuthModule();
 const usersRoutes = createUsersModule();
 const categoriesRoutes = createCategoriesModule();
 const productsRoutes = createProductsModule();
+const productsImagesRoutes = createProductImagesModule();
 
 authRoutes.register(app);
 usersRoutes.register(app);
 categoriesRoutes.register(app);
 productsRoutes.register(app);
+productsImagesRoutes.register(app);
 
 export { app };

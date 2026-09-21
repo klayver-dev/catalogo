@@ -1,10 +1,25 @@
 generator client {
   provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  output = "../src/generated/prisma"
 }
 
 datasource db {
   provider = "sqlite"
+}
+
+enum UserRole {
+  USER
+  ADMIN
+}
+
+enum ShippingType {
+  FIXED
+  QUOTE
+}
+
+enum PriceCalculationType {
+  TOTAL
+  UNIT
 }
 
 model User {
@@ -12,7 +27,7 @@ model User {
   name                String
   email               String              @unique
   password            String
-  role                String              @default("USER")
+  role                UserRole            @default(USER)
   createdAt           DateTime            @default(now())
   updatedAt           DateTime            @updatedAt
 
@@ -20,12 +35,224 @@ model User {
 }
 
 model PasswordResetToken {
-  id        String   @id @default(uuid())
+  id        String    @id @default(uuid())
   userId    String
-  tokenHash String   @unique
+  tokenHash String    @unique
   expiresAt DateTime
   usedAt    DateTime?
-  createdAt DateTime @default(now())
+  createdAt DateTime  @default(now())
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Category {
+  id        String   @id @default(uuid())
+  name      String
+  slug      String   @unique
+  active    Boolean  @default(true)
+  position  Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  products Product[]
+
+  @@index([active])
+  @@index([position])
+}
+
+model Product {
+  id             String       @id @default(uuid())
+  categoryId     String
+  name           String
+  slug           String       @unique
+  sku            String?      @unique
+  description    String?
+  active         Boolean      @default(true)
+  featured       Boolean      @default(false)
+  position       Int          @default(0)
+  productionDays Int?
+  shippingType   ShippingType @default(QUOTE)
+  shippingPrice  Int?
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  category           Category                    @relation(fields: [categoryId], references: [id])
+  images             ProductImage[]
+  optionGroups       ProductOptionGroup[]
+  options            ProductOption[]
+  priceTiers         ProductPriceTier[]
+  additionalServices ProductAdditionalService[]
+
+  @@index([categoryId])
+  @@index([active])
+  @@index([featured])
+  @@index([position])
+}
+
+model ProductImage {
+  id        String   @id @default(uuid())
+  productId String
+  url       String
+  alt       String?
+  position  Int      @default(0)
+  createdAt DateTime @default(now())
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@index([productId])
+  @@index([position])
+}
+
+model OptionGroup {
+  id        String   @id @default(uuid())
+  name      String
+  position  Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  options  Option[]
+  products ProductOptionGroup[]
+
+  @@index([position])
+}
+
+model Option {
+  id            String   @id @default(uuid())
+  optionGroupId String
+  name          String
+  position      Int      @default(0)
+  active        Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  optionGroup OptionGroup @relation(fields: [optionGroupId], references: [id], onDelete: Cascade)
+
+  products          ProductOption[]
+  priceCombinations PriceCombinationOption[]
+
+  @@index([optionGroupId])
+  @@index([active])
+  @@index([position])
+}
+
+model ProductOptionGroup {
+  id            String  @id @default(uuid())
+  productId     String
+  optionGroupId String
+  position      Int     @default(0)
+  required      Boolean @default(false)
+  multiple      Boolean @default(false)
+
+  product     Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  optionGroup OptionGroup @relation(fields: [optionGroupId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, optionGroupId])
+  @@index([productId])
+  @@index([optionGroupId])
+}
+
+model ProductOption {
+  id              String  @id @default(uuid())
+  productId       String
+  optionId        String
+  active          Boolean @default(true)
+  additionalPrice Int     @default(0)
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  option  Option  @relation(fields: [optionId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, optionId])
+  @@index([productId])
+  @@index([optionId])
+}
+
+model ProductPriceTier {
+  id               String               @id @default(uuid())
+  productId        String
+  quantity         Int
+  calculationType  PriceCalculationType @default(TOTAL)
+  priceInCents     Int
+  active           Boolean              @default(true)
+  position         Int                  @default(0)
+  createdAt        DateTime             @default(now())
+  updatedAt        DateTime             @updatedAt
+
+  product           Product           @relation(fields: [productId], references: [id], onDelete: Cascade)
+  priceCombinations PriceCombination[]
+
+  @@unique([productId, quantity])
+  @@index([productId])
+  @@index([quantity])
+}
+
+model PriceCombination {
+  id           String   @id @default(uuid())
+  priceTierId  String
+  priceInCents Int
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  priceTier ProductPriceTier @relation(fields: [priceTierId], references: [id], onDelete: Cascade)
+  options   PriceCombinationOption[]
+
+  @@index([priceTierId])
+}
+
+model PriceCombinationOption {
+  id            String @id @default(uuid())
+  combinationId String
+  optionId      String
+
+  combination PriceCombination @relation(fields: [combinationId], references: [id], onDelete: Cascade)
+  option      Option           @relation(fields: [optionId], references: [id], onDelete: Cascade)
+
+  @@unique([combinationId, optionId])
+  @@index([combinationId])
+  @@index([optionId])
+}
+
+model AdditionalService {
+  id           String   @id @default(uuid())
+  name         String
+  description  String?
+  priceInCents Int
+  active       Boolean  @default(true)
+  position     Int      @default(0)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  products ProductAdditionalService[]
+
+  @@index([active])
+  @@index([position])
+}
+
+model ProductAdditionalService {
+  id                  String @id @default(uuid())
+  productId           String
+  additionalServiceId String
+
+  product           Product          @relation(fields: [productId], references: [id], onDelete: Cascade)
+  additionalService AdditionalService @relation(fields: [additionalServiceId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, additionalServiceId])
+  @@index([productId])
+  @@index([additionalServiceId])
+}
+
+model Banner {
+  id          String   @id @default(uuid())
+  title       String
+  description String?
+  imageUrl    String
+  link        String?
+  active      Boolean  @default(true)
+  position    Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([active])
+  @@index([position])
 }

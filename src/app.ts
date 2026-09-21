@@ -6,6 +6,7 @@ import { frontendUrl } from './config.js';
 import { createAuthModule } from './containers/auth-container.js';
 import { createCategoriesModule } from './containers/categories-container.js';
 import { createOptionGroupsModule } from './containers/option-groups-container.js';
+import { createOptionsModule } from './containers/options-container.js';
 import { createProductImagesModule } from './containers/product-images-container.js';
 import { createProductsModule } from './containers/products-container.js';
 import { createUsersModule } from './containers/users-container.js';
@@ -31,6 +32,7 @@ const categoriesRoutes = createCategoriesModule();
 const productsRoutes = createProductsModule();
 const productsImagesRoutes = createProductImagesModule();
 const optionGroupsRoutes = createOptionGroupsModule();
+const optionsRoutes = createOptionsModule();
 
 authRoutes.register(app);
 usersRoutes.register(app);
@@ -38,5 +40,6 @@ categoriesRoutes.register(app);
 productsRoutes.register(app);
 productsImagesRoutes.register(app);
 optionGroupsRoutes.register(app);
+optionsRoutes.register(app);
 
 export { app };

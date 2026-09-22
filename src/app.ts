@@ -5,6 +5,7 @@ import Fastify from 'fastify';
 import { frontendUrl } from './config.js';
 import { createAdditionalServicesModule } from './containers/additional-services-container.js';
 import { createAuthModule } from './containers/auth-container.js';
+import { createBannersModule } from './containers/banners-container.js';
 import { createCategoriesModule } from './containers/categories-container.js';
 import { createOptionGroupsModule } from './containers/option-groups-container.js';
 import { createOptionsModule } from './containers/options-container.js';
@@ -45,6 +46,7 @@ const productPriceTiersRoutes = createProductPriceTiersModule();
 const priceCombinationsRoutes = createPriceCombinationsModule();
 const additionalServicesRoutes = createAdditionalServicesModule();
 const productAdditionalServicesRoutes = createProductAdditionalServicesModule();
+const bannersRoutes = createBannersModule();
 
 authRoutes.register(app);
 usersRoutes.register(app);
@@ -59,5 +61,6 @@ productPriceTiersRoutes.register(app);
 priceCombinationsRoutes.register(app);
 additionalServicesRoutes.register(app);
 productAdditionalServicesRoutes.register(app);
+bannersRoutes.register(app);
 
 export { app };

@@ -1,8 +1,10 @@
 import type { FastifyInstance, FastifyRequest } from 'fastify';
+import path from 'node:path';
+
 import { authMiddleware } from '../../middlewares/auth-middleware.js';
-import type { AuthorizationService } from '../authorization/authorization-service.js';
-import type { ProductImagesController } from './product-images-controller.js';
+
 import { createProductImageSchema, updateProductImageSchema } from './product-images-schema.js';
+
 import {
   createProductImageRouteSchema,
   deleteProductImageRouteSchema,
@@ -10,11 +12,10 @@ import {
   updateProductImageRouteSchema,
 } from './product-images-swagger.js';
 
+import type { ProductImagesController } from './product-images-controller.js';
+
 export class ProductImagesRoutes {
-  constructor(
-    private readonly productImagesController: ProductImagesController,
-    private readonly authorizationService: AuthorizationService,
-  ) {}
+  constructor(private readonly productImagesController: ProductImagesController) {}
 
   register(app: FastifyInstance) {
     app.post(
@@ -31,7 +32,41 @@ export class ProductImagesRoutes {
         }>,
         reply,
       ) => {
-        const req = createProductImageSchema.safeParse(request.body);
+        const parts = request.parts();
+
+        const fields: Record<string, string> = {};
+
+        let image: Buffer | undefined;
+        let extension: string | undefined;
+
+        for await (const part of parts) {
+          if (part.type === 'file') {
+            if (!part.mimetype.startsWith('image/')) {
+              return reply.status(400).send({
+                message: 'O arquivo deve ser uma imagem.',
+                data: null,
+              });
+            }
+
+            image = await part.toBuffer();
+
+            extension = path.extname(part.filename).toLowerCase();
+          } else {
+            fields[part.fieldname] = String(part.value);
+          }
+        }
+
+        if (!image || !extension) {
+          return reply.status(400).send({
+            message: 'A imagem do produto é obrigatória.',
+            data: null,
+          });
+        }
+
+        const req = createProductImageSchema.safeParse({
+          alt: fields.alt,
+          position: fields.position !== undefined ? Number(fields.position) : undefined,
+        });
 
         if (!req.success) {
           const errors = req.error.issues.map(issue => ({
@@ -46,7 +81,13 @@ export class ProductImagesRoutes {
           });
         }
 
-        return this.productImagesController.create(request.params.productId, req.data, reply);
+        return this.productImagesController.create(
+          request.params.productId,
+          req.data,
+          image,
+          extension,
+          reply,
+        );
       },
     );
 
@@ -82,7 +123,34 @@ export class ProductImagesRoutes {
         }>,
         reply,
       ) => {
-        const req = updateProductImageSchema.safeParse(request.body);
+        const parts = request.parts();
+
+        const fields: Record<string, string> = {};
+
+        let image: Buffer | undefined;
+        let extension: string | undefined;
+
+        for await (const part of parts) {
+          if (part.type === 'file') {
+            if (!part.mimetype.startsWith('image/')) {
+              return reply.status(400).send({
+                message: 'O arquivo deve ser uma imagem.',
+                data: null,
+              });
+            }
+
+            image = await part.toBuffer();
+
+            extension = path.extname(part.filename).toLowerCase();
+          } else {
+            fields[part.fieldname] = String(part.value);
+          }
+        }
+
+        const req = updateProductImageSchema.safeParse({
+          alt: fields.alt,
+          position: fields.position !== undefined ? Number(fields.position) : undefined,
+        });
 
         if (!req.success) {
           const errors = req.error.issues.map(issue => ({
@@ -101,6 +169,8 @@ export class ProductImagesRoutes {
           request.params.productId,
           request.params.imageId,
           req.data,
+          image,
+          extension,
           reply,
         );
       },

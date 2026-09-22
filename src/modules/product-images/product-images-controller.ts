@@ -5,24 +5,30 @@ import type { ProductImagesService } from './product-images-service.js';
 export class ProductImagesController {
   constructor(private readonly productImagesService: ProductImagesService) {}
 
-  async create(productId: string, data: CreateProductImageData, reply: FastifyReply) {
-    const image = await this.productImagesService.create(productId, data);
+  async create(
+    productId: string,
+    data: CreateProductImageData,
+    image: Buffer,
+    extension: string,
+    reply: FastifyReply,
+  ) {
+    const productImage = await this.productImagesService.create(productId, data, image, extension);
 
     return reply.status(201).send({
-      message: 'Imagem adicionada com sucesso.',
+      message: 'Imagem adicionada ao produto com sucesso.',
       data: {
-        image,
+        productImage,
       },
     });
   }
 
   async findAll(productId: string, reply: FastifyReply) {
-    const images = await this.productImagesService.findAll(productId);
+    const productImages = await this.productImagesService.findAll(productId);
 
     return reply.send({
-      message: 'Imagens encontradas.',
+      message: 'Imagens do produto encontradas.',
       data: {
-        images,
+        productImages,
       },
     });
   }
@@ -31,14 +37,22 @@ export class ProductImagesController {
     productId: string,
     imageId: string,
     data: UpdateProductImageData,
+    image: Buffer | undefined,
+    extension: string | undefined,
     reply: FastifyReply,
   ) {
-    const image = await this.productImagesService.update(productId, imageId, data);
+    const productImage = await this.productImagesService.update(
+      productId,
+      imageId,
+      data,
+      image,
+      extension,
+    );
 
     return reply.send({
-      message: 'Imagem atualizada com sucesso.',
+      message: 'Imagem do produto atualizada com sucesso.',
       data: {
-        image,
+        productImage,
       },
     });
   }
@@ -47,7 +61,7 @@ export class ProductImagesController {
     await this.productImagesService.delete(productId, imageId);
 
     return reply.send({
-      message: 'Imagem excluída com sucesso.',
+      message: 'Imagem removida do produto com sucesso.',
       data: null,
     });
   }

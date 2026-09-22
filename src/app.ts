@@ -1,8 +1,12 @@
 import cookie from '@fastify/cookie';
 import cors from '@fastify/cors';
+import multipart from '@fastify/multipart';
+import fastifyStatic from '@fastify/static';
 import Fastify from 'fastify';
+import path from 'node:path';
 
 import { frontendUrl } from './config.js';
+
 import { createAdditionalServicesModule } from './containers/additional-services-container.js';
 import { createAuthModule } from './containers/auth-container.js';
 import { createBannersModule } from './containers/banners-container.js';
@@ -17,6 +21,7 @@ import { createProductOptionsModule } from './containers/product-options-contain
 import { createProductPriceTiersModule } from './containers/product-price-tiers-container.js';
 import { createProductsModule } from './containers/products-container.js';
 import { createUsersModule } from './containers/users-container.js';
+
 import { registerErrorHandler } from './error-handler.js';
 import { registerSwagger } from './swagger.js';
 
@@ -28,6 +33,17 @@ await app.register(cors, {
 });
 
 await app.register(cookie);
+
+await app.register(multipart, {
+  limits: {
+    fileSize: 5 * 1024 * 1024,
+  },
+});
+
+await app.register(fastifyStatic, {
+  root: path.resolve('uploads'),
+  prefix: '/uploads/',
+});
 
 await registerSwagger(app);
 

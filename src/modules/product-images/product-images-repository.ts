@@ -10,11 +10,13 @@ export class ProductImagesRepository {
     });
   }
 
-  async create(productId: string, data: CreateProductImageData) {
+  async create(productId: string, data: CreateProductImageData, url: string) {
     return prisma.productImage.create({
       data: {
         productId,
-        ...data,
+        url,
+        alt: data.alt,
+        position: data.position,
       },
     });
   }
@@ -39,20 +41,24 @@ export class ProductImagesRepository {
     });
   }
 
-  async update(imageId: string, productId: string, data: UpdateProductImageData) {
+  async update(imageId: string, data: UpdateProductImageData, url?: string) {
     return prisma.productImage.update({
       where: {
         id: imageId,
       },
-      data,
+      data: {
+        ...data,
+        ...(url !== undefined && {
+          url,
+        }),
+      },
     });
   }
 
-  async delete(imageId: string, productId: string) {
+  async delete(imageId: string) {
     return prisma.productImage.delete({
       where: {
         id: imageId,
-        productId,
       },
     });
   }

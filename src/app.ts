@@ -3,6 +3,7 @@ import cors from '@fastify/cors';
 import Fastify from 'fastify';
 
 import { frontendUrl } from './config.js';
+import { createAdditionalServicesModule } from './containers/additional-services-container.js';
 import { createAuthModule } from './containers/auth-container.js';
 import { createCategoriesModule } from './containers/categories-container.js';
 import { createOptionGroupsModule } from './containers/option-groups-container.js';
@@ -41,6 +42,7 @@ const productOptionGroupsRoutes = createProductOptionGroupsModule();
 const productOptionsRoutes = createProductOptionsModule();
 const productPriceTiersRoutes = createProductPriceTiersModule();
 const priceCombinationsRoutes = createPriceCombinationsModule();
+const additionalServicesRoutes = createAdditionalServicesModule();
 
 authRoutes.register(app);
 usersRoutes.register(app);
@@ -53,5 +55,6 @@ productOptionGroupsRoutes.register(app);
 productOptionsRoutes.register(app);
 productPriceTiersRoutes.register(app);
 priceCombinationsRoutes.register(app);
+additionalServicesRoutes.register(app);
 
 export { app };

@@ -9,6 +9,7 @@ import { createOptionGroupsModule } from './containers/option-groups-container.j
 import { createOptionsModule } from './containers/options-container.js';
 import { createProductImagesModule } from './containers/product-images-container.js';
 import { createProductOptionGroupsModule } from './containers/product-option-groups-container.js';
+import { createProductOptionsModule } from './containers/product-options-container.js';
 import { createProductsModule } from './containers/products-container.js';
 import { createUsersModule } from './containers/users-container.js';
 import { registerErrorHandler } from './error-handler.js';
@@ -35,6 +36,7 @@ const productsImagesRoutes = createProductImagesModule();
 const optionGroupsRoutes = createOptionGroupsModule();
 const optionsRoutes = createOptionsModule();
 const productOptionGroupsRoutes = createProductOptionGroupsModule();
+const productOptionsRoutes = createProductOptionsModule();
 
 authRoutes.register(app);
 usersRoutes.register(app);
@@ -44,5 +46,6 @@ productsImagesRoutes.register(app);
 optionGroupsRoutes.register(app);
 optionsRoutes.register(app);
 productOptionGroupsRoutes.register(app);
+productOptionsRoutes.register(app);
 
 export { app };

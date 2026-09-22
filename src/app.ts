@@ -7,6 +7,7 @@ import { createAuthModule } from './containers/auth-container.js';
 import { createCategoriesModule } from './containers/categories-container.js';
 import { createOptionGroupsModule } from './containers/option-groups-container.js';
 import { createOptionsModule } from './containers/options-container.js';
+import { createPriceCombinationsModule } from './containers/price-combinations-container.js';
 import { createProductImagesModule } from './containers/product-images-container.js';
 import { createProductOptionGroupsModule } from './containers/product-option-groups-container.js';
 import { createProductOptionsModule } from './containers/product-options-container.js';
@@ -39,6 +40,7 @@ const optionsRoutes = createOptionsModule();
 const productOptionGroupsRoutes = createProductOptionGroupsModule();
 const productOptionsRoutes = createProductOptionsModule();
 const productPriceTiersRoutes = createProductPriceTiersModule();
+const priceCombinationsRoutes = createPriceCombinationsModule();
 
 authRoutes.register(app);
 usersRoutes.register(app);
@@ -50,5 +52,6 @@ optionsRoutes.register(app);
 productOptionGroupsRoutes.register(app);
 productOptionsRoutes.register(app);
 productPriceTiersRoutes.register(app);
+priceCombinationsRoutes.register(app);
 
 export { app };
